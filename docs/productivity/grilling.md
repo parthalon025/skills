@@ -4,6 +4,8 @@
 
 It does not ask one question at a time, and it does not ask everything at once. Each **round** asks the whole **frontier**: every decision whose prerequisites are already settled, and nothing else. Two questions never share a round if one depends on the other — a question that hinges on an answer still open belongs to a later round. Your answers settle decisions, the frontier moves outward, and the next round asks what that unblocked. Thirteen questions typically land in about three rounds rather than thirteen.
 
+It also does not ask abstract A/Bs about modules or ticket scope. Every question is a **scene** — named people, a moment, a thing in front of them — and every choice is three **orders** of outcome: what happens next, who that hits right after, and the new normal that move installs. That is the difference between nodding through a design and feeling the blast radius.
+
 ## When to reach for it
 
 Type `/grilling`, or the [agent](https://www.aihero.dev/ai-coding-dictionary/agent) reaches for it on its own when a task fits. It is the only [skill](https://www.aihero.dev/ai-coding-dictionary/skill) in the grilling family that is model-invoked, which is why you rarely type it: usually a skill you *did* type is running it for you.
@@ -20,11 +22,11 @@ Typing `/grilling` directly gets you the plain interview and nothing else. Where
 
 ## The round, the frontier, and who decides
 
-Three ideas carry the whole skill.
+Four ideas carry the whole skill.
 
-The **design tree** is the model of the subject: decisions with decisions hanging off them. The **frontier** is the set of decisions whose prerequisites are all settled — the only questions that can honestly be asked yet. A **round** is one frontier, asked in full and answered in full.
+The **design tree** is the model of the subject: decisions with decisions hanging off them. The **frontier** is the set of decisions whose prerequisites are all settled — the only questions that can honestly be asked yet. A **round** is one frontier, asked in full and answered in full. A **scene** is how each question lands: named people, a moment, and three **orders** of outcome so you are choosing a blast radius, not a label.
 
-Inside a round every question arrives in a fixed shape: numbered and titled behind a `❓`, then the body, then the agent's recommended answer alone on a `➡️` line. That is what makes a round answerable by number — "1 yes, 2 the second option, 3 no, here's why" — instead of by quoting questions back. The format has one known rough edge: the recommendation sometimes argues *against* the question as it was worded, so agreeing with the recommendation means answering "no" to the question. When that happens, answer the recommendation and say so.
+Inside a round every question arrives in a fixed shape: numbered and titled behind a `❓`, then a **scene**, then choices. Each choice is three orders — first, then second, then third — still in that scene. The agent's recommended answer sits alone on a `➡️` line. That is what makes a round answerable by number — "1 A, 2 B, 3 A, here's why" — instead of by quoting questions back. The format has one known rough edge: the recommendation sometimes argues *against* the question as it was worded, so agreeing with the recommendation means answering "no" to the question. When that happens, answer the recommendation and say so.
 
 The other half of the design is the split between facts and decisions. Facts are the skill's own job: when a frontier question needs something the [environment](https://www.aihero.dev/ai-coding-dictionary/environment) can settle, it dispatches a [sub-agent](https://www.aihero.dev/ai-coding-dictionary/subagent) to go and find out rather than asking you. It does not block on that — only the questions downstream of a running exploration wait. Decisions are yours, and it must wait for them. An agent running `grilling` that answers its own decisions has broken the skill, not interpreted it liberally. The session ends when the frontier is empty, and it will not act on what you agreed until you confirm you have reached a shared understanding.
 
@@ -41,6 +43,9 @@ This page covers the mechanism. The things people most often want are documented
 | What gets written to `CONTEXT.md`, what becomes an ADR | [grill-with-docs](https://aihero.dev/skills-grill-with-docs) |
 
 ## Common questions
+
+**Why is every question a story with three outcomes?**
+An abstract A/B about modules is easy to nod through. A scene forces a decision you would actually live with; the second and third orders are the blast radius — who else it hits, and the new normal it installs — so you are not choosing only what happens next.
 
 **Can I go back to one question at a time?**
 Yes, and a large part of the audience does. Add this to your global `CLAUDE.md`:
@@ -75,6 +80,8 @@ A real and unfixed rough edge, reported across [harnesses](https://www.aihero.de
 ## It's working if
 
 - A round arrives as a numbered list, each question with its recommendation on a separate `➡️` line, and you can answer the whole round by number.
+- Each question is a scene you can inhabit — named people, a moment — not an abstract A/B about modules.
+- Each choice names what happens next, who that hits, and the new normal it installs.
 - Nothing in a round needs another question in the same round answered first.
 - Later rounds ask things the first round could not have asked.
 - It goes and looks facts up — reading files, dispatching a sub-agent — rather than asking you something it could have found out.
