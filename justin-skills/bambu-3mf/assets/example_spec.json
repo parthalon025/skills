@@ -1,0 +1,25 @@
+{
+ "name": "Clip_H2D_WhiteGlow", "version": "x9.1",
+ "printer": {"machine": "Bambu Lab H2D 0.4 nozzle", "process": "0.20mm Standard @BBL H2D"},
+ "filaments": [
+   {"slot": 3, "preset": "Generic PCTG @BBL H2D", "color": "#FFFFFF", "label": "White PCTG"},
+   {"slot": 8, "preset": "Generic PCTG @BBL H2D", "color": "#7CFC00", "label": "Glow PCTG",
+    "overrides": {"nozzle_temperature": 250, "filament_flow_ratio": 0.97}}
+ ],
+ "process_overrides": {"layer_height": 0.3, "enable_prime_tower": 1, "outer_wall_speed": 120, "brim_type": "no_brim"},
+ "plates": [
+  {"name": "Test i0.20-i0.70", "bed_type": "Textured PEI Plate", "objects": [
+     {"name": "Clip_i0.20", "filament": 3, "copies": 4,
+      "parts": [{"name": "Clip_white", "mesh": "example/clip_white.stl", "filament": 3},
+                {"name": "Clip_glow", "mesh": "example/clip_glow.stl", "filament": 8, "settings": {"wall_loops": 3}},
+                {"name": "Line_hole", "mesh": "example/hole.stl", "type": "negative_part"},
+                {"name": "Jaw_mod", "mesh": "example/mod.stl", "type": "modifier_part", "settings": {"sparse_infill_density": "100%"}}],
+      "settings": {"wall_loops": 2, "sparse_infill_density": "20%", "seam_position": "back"},
+      "height_ranges": [{"min_z": 0, "max_z": 1.2, "settings": {"sparse_infill_density": "100%"}}]}
+  ]},
+  {"name": "Float", "print_sequence": "by object", "nozzle_map": {"3": "left", "8": "right"}, "objects": [
+     {"name": "Spar", "mesh": "example/float.stl", "filament": 8, "rotate": [0, 90, 0], "position": [175, 160]}
+  ]},
+  {"name": "Balls", "objects": [{"name": "Ball", "mesh": "example/ball.stl", "filament": 3, "copies": 6}]}
+ ]
+}

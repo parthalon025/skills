@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Marker board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root { --paper: #eceae6; --ink: #1d1e21; --muted: #5d6068; --rule: #c9c6bf; --panel: #f6f5f2; --red: #b3121d; --well: #26282c; --focus: #b3121d;
+  box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --paper: #17181a; --ink: #e9e9ea; --muted: #9a9ca3; --rule: #34363b; --panel: #1f2023; --red: #e0313c; --focus: #ff5a64; } }
+:root[data-theme="dark"] { --paper: #17181a; --ink: #e9e9ea; --muted: #9a9ca3; --rule: #34363b; --panel: #1f2023; --red: #e0313c; --focus: #ff5a64; }
+*, *::before, *::after { box-sizing: inherit; }
+html { height: 100%; scroll-padding-top: env(safe-area-inset-top, 0px); }
+body { margin: 0; height: 100%; background: var(--paper); color: var(--ink); font-family: "Barlow Semi Condensed", "Arial Narrow", Arial, sans-serif; font-size: 15px; line-height: 1.35; }
+.app { display: grid; grid-template-columns: minmax(300px, 360px) 1fr; height: 100%; }
+aside { background: var(--panel); border-right: 1px solid var(--rule); overflow-y: auto; padding: 16px 16px 24px; }
+h1 { font-size: 22px; font-weight: 600; margin: 0 0 2px; }
+.lede { color: var(--muted); margin: 0 0 12px; font-size: 14px; }
+.tools { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+button { font: inherit; font-size: 14px; font-weight: 500; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); padding: 6px 10px; border-radius: 3px; cursor: pointer; }
+button.primary { background: var(--red); border-color: var(--red); color: #fff; }
+button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+button:disabled { opacity: 0.45; cursor: default; }
+button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.sel { border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 10px 0; margin: 6px 0 10px; }
+.sel h2 { font-size: 16px; margin: 0 0 6px; font-weight: 600; }
+.sel label { display: block; font-size: 13px; color: var(--muted); margin-top: 6px; }
+.sel input[type=text] { width: 100%; font: inherit; font-size: 14px; padding: 4px 6px; border: 1px solid var(--rule); border-radius: 3px; background: var(--paper); color: var(--ink); }
+.sel .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.sel .check { display: flex; gap: 6px; align-items: center; font-size: 14px; color: var(--ink); margin-top: 6px; }
+.sel input[type=range] { width: 100%; accent-color: var(--red); }
+.rowf { display: grid; grid-template-columns: 1fr 48px; column-gap: 8px; align-items: center; margin: 6px 0; font-size: 14px; }
+.rowf output { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; } .rowf input { grid-column: 1 / -1; width: 100%; accent-color: var(--red); }
+.grp { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 6px 0 8px; font-size: 14px; } .grp label { display: flex; gap: 5px; align-items: center; }
+.lab { display: block; font-size: 13px; color: var(--muted); margin-top: 10px; }
+select { font: inherit; font-size: 14px; padding: 5px 6px; border: 1px solid var(--rule); border-radius: 3px; background: var(--paper); color: var(--ink); }
+.tr { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid var(--rule); font-size: 14px; }
+.tr i { display: inline-block; width: 12px; height: 4px; margin-right: 6px; vertical-align: middle; }
+.guide { border-top: 1px solid var(--rule); padding: 8px 0 4px; margin-bottom: 6px; }
+.guide summary { cursor: pointer; font-weight: 600; font-size: 15px; }
+.gnote { color: var(--muted); font-size: 13px; margin: 6px 0; }
+.gi { display: grid; grid-template-columns: 42px 1fr auto; gap: 2px 8px; align-items: center; padding: 5px 0; border-bottom: 1px solid var(--rule); font-size: 14px; }
+.gi b { font-variant-numeric: tabular-nums; } .gi small { grid-column: 2 / 3; color: var(--muted); font-size: 12.5px; }
+.gi .pri { font-size: 11px; font-weight: 600; color: var(--red); }
+.gi button { padding: 3px 9px; font-size: 13px; } .gi.done { opacity: 0.55; }
+.facts { font-variant-numeric: tabular-nums; font-size: 14px; color: var(--muted); margin-top: 6px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+th { text-align: left; font-weight: 600; color: var(--muted); font-size: 13px; border-bottom: 1px solid var(--rule); padding: 4px 4px; }
+td { padding: 3px 4px; border-bottom: 1px solid var(--rule); }
+tr { cursor: pointer; } tr.on td { background: color-mix(in srgb, var(--red) 14%, transparent); }
+.chip { display: inline-block; min-width: 14px; text-align: center; font-weight: 600; }
+.ok { color: #2f8f3a; } .hid { color: #c07a00; } .no { color: var(--muted); }
+textarea { width: 100%; height: 120px; margin-top: 8px; font: 12px/1.4 ui-monospace, Menlo, Consolas, monospace; background: var(--paper); color: var(--ink); border: 1px solid var(--rule); border-radius: 3px; padding: 8px; }
+main { display: grid; grid-template-rows: minmax(0, 0.9fr) minmax(0, 1.6fr); gap: 6px; background: var(--well); padding: 6px; min-height: 0; }
+.pane { position: relative; min-height: 0; overflow: hidden; border-radius: 3px; background: #1b1c1f; }
+.pane canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
+.pane .cap { position: absolute; left: 10px; top: 8px; color: #e7e8ea; font-size: 14px; font-weight: 600; text-shadow: 0 0 4px #000; pointer-events: none; }
+.status { position: absolute; left: 10px; bottom: 8px; color: #d9dadd; font-size: 13px; text-shadow: 0 0 4px #000; pointer-events: none; }
+@media (max-width: 820px) { .app { grid-template-columns: 1fr; height: auto; } main { order: -1; height: 80vh; } aside { border-right: 0; border-top: 1px solid var(--rule); } }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside aria-label="Markers">
+    <h1>Marker board</h1>
+    <p class="lede">Drag a marker onto the true feature in either image. Placing it in one image draws a guide line in the other showing every height it could be at. Where a feature is hidden, mark it obscured and set its height.</p>
+    <div class="tools">
+      <button type="button" id="bAdd" aria-pressed="false">Add marker</button>
+      <button type="button" id="bDel" disabled>Delete</button>
+      <button type="button" id="bModel" aria-pressed="true">Model positions</button>
+      <button type="button" id="bReset">Reset to model</button>
+      <button type="button" id="bMine">Remove my markers</button>
+      <button type="button" id="bAll">Remove all markers</button>
+      <button type="button" id="bOutline" aria-pressed="true">Model outline</button>
+    </div>
+    <details class="guide" open>
+      <summary>Fit the model</summary>
+      <p class="gnote">Only markers and traces you've placed or moved count. The top photo is trusted most; lower "Trust the render" if the render looks inconsistent.</p>
+      <div class="rowf"><label for="wR">Trust the render</label><output id="oR"></output><input type="range" id="wR" min="0" max="1" step="0.05" value="0.4"></div>
+      <div class="rowf"><label for="wE">Weight of traced edges</label><output id="oE"></output><input type="range" id="wE" min="0" max="2" step="0.1" value="1"></div>
+      <div class="grp" id="grp"></div>
+      <div class="tools"><button type="button" class="primary" id="bFit">Fit to my markers</button><button type="button" id="bStop" disabled>Stop</button><button type="button" id="bUndo" disabled>Undo fit</button></div>
+      <div class="facts" id="fitMsg"></div>
+      <div class="tools"><button type="button" id="bCam">Refine render camera</button></div>
+      <div class="facts" id="camMsg">Drag at least 4 cyan landmarks onto their true spots in the render first.</div>
+      <label class="lab" for="pIO">Parameters (paste from the shaper, or copy the fitted set back)</label>
+      <textarea id="pIO" spellcheck="false"></textarea>
+      <div class="tools"><button type="button" id="bLoad">Load pasted parameters</button><button type="button" id="bCopyP">Copy parameters</button></div>
+    </details>
+    <details class="guide">
+      <summary>Trace edges</summary>
+      <p class="gnote">Pick an edge, press Trace, then click along it in one image. Double-click or press Finish to end. Enter one side is enough.</p>
+      <div class="tools"><select id="tType" aria-label="Edge to trace"></select><button type="button" id="bTrace" aria-pressed="false">Trace</button><button type="button" id="bFin" disabled>Finish</button></div>
+      <div id="tList"></div>
+    </details>
+    <details class="guide" open>
+      <summary>Features I need (left side only — the right mirrors it)</summary>
+      <p class="gnote">Press Place, then click that feature in either image; follow the red guide line to place it in the other. If it's hidden in one image, tick Obscured there and set its height.</p>
+      <div id="guide"></div>
+    </details>
+    <div class="sel" id="selBox" hidden>
+      <h2 id="selTitle"></h2>
+      <div class="row2">
+        <div><label for="fId">Name</label><input type="text" id="fId"></div>
+        <div><label for="fDesc">Description</label><input type="text" id="fDesc"></div>
+      </div>
+      <label class="check"><input type="checkbox" id="fObsP"> Obscured in the top photo</label>
+      <label class="check"><input type="checkbox" id="fObsG"> Obscured in the 3D render</label>
+      <label for="fZ">Height when seen in one image only: <span id="oZ"></span></label>
+      <input type="range" id="fZ" min="0" max="45" step="0.1">
+      <div class="facts" id="facts"></div>
+      <div class="tools" style="margin-top:8px"><button type="button" id="bClrP">Unplace in photo</button><button type="button" id="bClrG">Unplace in render</button></div>
+    </div>
+    <table><thead><tr><th>Marker</th><th title="Top photo">Photo</th><th title="3D render">Render</th><th>Moved</th></tr></thead><tbody id="list"></tbody></table>
+    <div class="tools" style="margin-top:12px"><button type="button" class="primary" id="bCopy">Copy markers</button></div>
+    <textarea id="out" readonly aria-label="Marker export"></textarea>
+  </aside>
+  <main>
+    <div class="pane" id="pG"><canvas id="cG" aria-label="3D render with markers"></canvas><div class="cap">3D render (Gemini)</div><div class="status" id="sG"></div></div>
+    <div class="pane" id="pP"><canvas id="cP" aria-label="Top photo with markers"></canvas><div class="cap">Top photo</div><div class="status" id="sP"></div></div>
+  </main>
+</div>
+<script>
+/*__SCROLLGEN__*/
+</script>
+<script>
+(function () {
+const CAMS = /*__CAMS__*/;
+const INIT = /*__MARKERS__*/;
+const IMG = { gem: 'data:image/jpeg;base64,/*__GEM__*/', photo: 'data:image/jpeg;base64,/*__PHOTO__*/' };
+const TO_ORIG = { gem: ([u, v]) => [u * 1.5, v * 1.5], photo: ([u, v]) => [1040 + 2 * u, 40 + 2 * v] };   // PROJECT CONFIG
+const BASE = 6.0, ZMIN = 6.0, ZMAX = 42.0, KEY = 'marker-board-v1';   // base plane z, guide-line z range (mm), storage key   // PROJECT CONFIG
+// ---------- camera math ----------
+const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]], add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]], mul = (a, s) => [a[0] * s, a[1] * s, a[2] * s];
+const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2], norm = a => Math.hypot(...a);
+function project(c, P) { const q = sub(P, c.pos), x = dot(c.R[0], q), y = dot(c.R[1], q), z = dot(c.R[2], q); return z > 1e-6 ? [c.cx + c.f * x / z, c.cy + c.f * y / z] : null; }
+function ray(c, [u, v]) { const a = (u - c.cx) / c.f, b = (v - c.cy) / c.f; const d = add(add(mul(c.R[0], a), mul(c.R[1], b)), c.R[2]); return { o: c.pos, d: mul(d, 1 / norm(d)) }; }
+function atZ(r, z) { if (Math.abs(r.d[2]) < 1e-9) return null; const t = (z - r.o[2]) / r.d[2]; return t > 0 ? add(r.o, mul(r.d, t)) : null; }
+function tri(r1, r2) {                    // closest points between two rays -> midpoint, gap
+  const w0 = sub(r1.o, r2.o), a = dot(r1.d, r1.d), b = dot(r1.d, r2.d), c = dot(r2.d, r2.d), d = dot(r1.d, w0), e = dot(r2.d, w0), den = a * c - b * b;
+  if (Math.abs(den) < 1e-12) return null;
+  const s = (b * e - c * d) / den, t = (a * e - b * d) / den, p1 = add(r1.o, mul(r1.d, s)), p2 = add(r2.o, mul(r2.d, t));
+  return { P: mul(add(p1, p2), 0.5), gap: norm(sub(p1, p2)) };
+}
+const OTHER = { gem: 'photo', photo: 'gem' };
+const SG = window.ScrollGen, PKEY = 'marker-board-params-v1', TKEY = 'marker-board-traces-v1';   // generator port global
+const EDGE_TYPES = [['u_outer', 'U band outer edge', '#ffb347'], ['u_inner', 'U band inner edge', '#ffd9a0'], ['up_outer', 'Upper band outer edge', '#6fe39a'],   // PROJECT CONFIG
+  ['up_inner', 'Upper band inner edge', '#c3f5d4'], ['arch', 'Arch edge (either)', '#ff7ad9']];
+const ECOL = Object.fromEntries(EDGE_TYPES.map(e => [e[0], e[2]]));
+const PARAMS = [ // key, min, max, group   // PROJECT CONFIG
+  ['W', 20, 32, 'U band'], ['bank_deg', 0, 20, 'U band'], ['z_hump', 0, 3, 'U band'],
+  ['fold_y', 90, 118, 'Dip'], ['dip_w', 6, 30, 'Dip'], ['dip_shape', 1, 5, 'Dip'], ['dip_bottom', 0, 14, 'Dip'],
+  ['up_x', -47, -35, 'Upper band'], ['W_up', 22, 34, 'Upper band'], ['app_y', 134, 158, 'Upper band'], ['crest_h', 0, 20, 'Upper band'], ['crest_pos', 0.1, 0.9, 'Upper band'],
+  ['z_top', 5, 14, 'Upper band'], ['flare_y0', 100, 130, 'Upper band'], ['flare_mm', 0, 10, 'Upper band'], ['rise_mm', 0, 5, 'Upper band'],
+  ['crease_ang', 30, 60, 'Top bend'], ['L_app', 2, 16, 'Top bend'],
+  ['c_top_arm', 0, 12, 'Arch'], ['c_rb', 1, 8, 'Arch'], ['c_rise', 0, 16, 'Arch'], ['c_R', 3, 12, 'Arch'], ['c_turn_deg', 140, 260, 'Arch'], ['c_back_len', 0, 20, 'Arch'],
+  ['c_lean_deg', -20, 40, 'Arch'], ['c_width', 14, 34, 'Arch']];
+const GROUPS = [...new Set(PARAMS.map(p => p[3]))];
+const FIT = { n: 700, n_curl: 200, n_c: 140, K: 9 };   // PROJECT CONFIG
+function uMatch(p) {                      // U band height = peak of the upper section (as in the shaper)
+  let q = Object.assign({}, p);
+  for (let it = 0; it < 2; it++) { const { L } = SG.leftGrid(q); let pk = -1e9; for (const row of L) { const c = row[row.length >> 1]; if (c[1] > 95) for (const pt of row) pk = Math.max(pk, pt[2]); }
+    const zb = +(pk - q.base_t).toFixed(3); if (Math.abs(zb - q.z_bot) < 0.01) break; q.z_bot = zb; }
+  return q;
+}
+let P; try { P = JSON.parse(localStorage.getItem(PKEY)); } catch (e) {} if (!P) P = uMatch(Object.assign({}, SG.DEFAULTS, FIT));
+let FEAT = SG.features(P), prevP = null;
+let T; try { T = JSON.parse(localStorage.getItem(TKEY)) || []; } catch (e) { T = []; }
+const saveP = () => { try { localStorage.setItem(PKEY, JSON.stringify(P)); } catch (e) {} };
+const saveT = () => { try { localStorage.setItem(TKEY, JSON.stringify(T)); } catch (e) {} };
+const mirror = q => [-q[0], q[1], q[2]];
+function modelPoint(F, id) { if (F.pts[id]) return F.pts[id]; if (/^R\d+$/.test(id) && F.pts['L' + id.slice(1)]) return mirror(F.pts['L' + id.slice(1)]); return null; }
+function mmPerPx(k, Pt) { if (k === 'photo') return 2 * 200 / 2071; const c = CAMS.gem, d = dot(c.R[2], sub(Pt, c.pos)); return d / c.f; }
+function segDist(p, poly) { let best = 1e18; for (let i = 0; i + 1 < poly.length; i++) { const a = poly[i], b = poly[i + 1]; if (!a || !b) continue;
+  const dx = b[0] - a[0], dy = b[1] - a[1], L2 = dx * dx + dy * dy; let t = L2 ? ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / L2 : 0; t = Math.max(0, Math.min(1, t));
+  const ex = a[0] + t * dx - p[0], ey = a[1] + t * dy - p[1], d = ex * ex + ey * ey; if (d < best) best = d; } return Math.sqrt(best); }
+const huber = (e, d) => e <= d ? e * e : d * (2 * e - d);
+function projPolys(F, type, k, step) { const out = []; for (const pl of F.edges[type]) for (const s of [1, -1]) { const pp = []; for (let i = 0; i < pl.length; i += step) { const q = pl[i]; pp.push(project(CAMS[k], s > 0 ? q : mirror(q))); } out.push(pp); } return out; }
+function evaluate(p, F, detail) {
+  const wv = { photo: 1, gem: +$('wR').value }, wE = +$('wE').value; let loss = 0, n = 0; const per = [];
+  for (const m of M) {
+    if (!m.touched || RIGID.has(m.id)) continue;
+    const L = modelPoint(F, m.id); if (!L) continue;
+    const cands = /^[LR]\d+$/.test(m.id) ? [L] : [L, mirror(L)];      // guide features match either side (symmetry)
+    let best = null;
+    for (const C of cands) { let l = 0, cnt = 0, parts = {};
+      for (const k of ['photo', 'gem']) { if (!m.uv[k] || m.obs[k] || !wv[k]) continue; const pr = project(CAMS[k], C); if (!pr) continue;
+        const e = Math.hypot(pr[0] - m.uv[k][0], pr[1] - m.uv[k][1]) * mmPerPx(k, C); parts[k] = e; l += wv[k] * huber(e, 3); cnt++; }
+      if (cnt && (!best || l < best.l)) best = { l, parts }; }
+    if (best) { loss += best.l; n++; if (detail) per.push({ id: m.id, ...best.parts }); }
+  }
+  for (const tr of T) {
+    if (!wv[tr.view] || tr.pts.length < 2) continue;
+    const polys = projPolys(F, tr.type, tr.view, 2); let s = 0;
+    for (const q of tr.pts) { let d = 1e9; for (const pl of polys) d = Math.min(d, segDist(q, pl)); const e = d * (tr.view === 'photo' ? mmPerPx('photo') : 0.08); s += huber(e, 3); }
+    loss += wE * wv[tr.view] * 8 * s / tr.pts.length; n += 8;
+    if (detail) per.push({ id: 'trace: ' + (EDGE_TYPES.find(e => e[0] === tr.type) || [])[1], [tr.view]: Math.sqrt(s / tr.pts.length) });
+  }
+  return { loss, n, rms: n ? Math.sqrt(loss / Math.max(1, n)) : 0, per };
+}
+function regularize(p, p0) { let r = 0; for (const [k, lo, hi] of PARAMS) r += ((p[k] - p0[k]) / (hi - lo)) ** 2; return 4.0 * r; }
+let fitting = false;
+async function runFit() {
+  const active = PARAMS.filter(q => $('g_' + q[3].replace(/\s/g, '')).checked);
+  const p0 = Object.assign({}, P); let cur = Object.assign({}, P), F0 = SG.features(uMatch(cur)), E0 = evaluate(cur, F0);
+  if (!E0.n) { $('fitMsg').textContent = 'Nothing to fit yet — place or move at least a few markers, or trace an edge.'; return; }
+  let best = E0.loss + regularize(cur, p0), evals = 0; const maxEvals = 900; prevP = Object.assign({}, P);
+  const steps = Object.fromEntries(active.map(([k, lo, hi]) => [k, 0.15 * (hi - lo)]));
+  fitting = true; $('bFit').disabled = true; $('bStop').disabled = false; $('bUndo').disabled = true;
+  const tryP = q => { const qq = uMatch(q), F = SG.features(qq), e = evaluate(qq, F); evals++; return { q: qq, L: e.loss + regularize(qq, p0) }; };
+  outer: for (let round = 0; round < 12 && fitting; round++) {
+    let improved = false;
+    for (const [k, lo, hi] of active) {
+      for (const dir of [1, -1]) {
+        if (!fitting || evals >= maxEvals) break outer;
+        const q = Object.assign({}, cur); q[k] = Math.min(hi, Math.max(lo, cur[k] + dir * steps[k])); if (q[k] === cur[k]) continue;
+        const r = tryP(q); if (r.L < best - 1e-6) { best = r.L; cur = r.q; improved = true; break; }
+      }
+      if (evals % 6 === 0) { $('fitMsg').textContent = `Fitting… ${evals} tries, error ${Math.sqrt(best / E0.n).toFixed(2)} mm (started ${E0.rms.toFixed(2)} mm)`; await new Promise(r => setTimeout(r, 0)); }
+    }
+    if (!improved) { let tiny = true; for (const k in steps) { steps[k] *= 0.5; if (steps[k] > 0.01 * (PARAMS.find(q => q[0] === k)[2] - PARAMS.find(q => q[0] === k)[1])) tiny = false; } if (tiny) break; }
+  }
+  fitting = false; P = cur; FEAT = SG.features(P); saveP();
+  const E1 = evaluate(P, FEAT, true);
+  const changedKeys = active.filter(([k]) => Math.abs(P[k] - p0[k]) > 1e-3).map(([k]) => `${k} ${(+p0[k]).toFixed(2)}→${(+P[k]).toFixed(2)}`);
+  $('fitMsg').innerHTML = `Error ${E0.rms.toFixed(2)} → <b>${E1.rms.toFixed(2)} mm</b> after ${evals} tries.<br>` + (changedKeys.length ? 'Changed: ' + changedKeys.join(', ') : 'No change improved the fit.')
+    + '<br>' + E1.per.map(q => `${q.id}: ${q.photo != null ? 'photo ' + q.photo.toFixed(1) : ''}${q.photo != null && q.gem != null ? ', ' : ''}${q.gem != null ? 'render ' + q.gem.toFixed(1) : ''} mm`).join(' · ');
+  $('bFit').disabled = false; $('bStop').disabled = true; $('bUndo').disabled = false; writeParams(); renderPanel(); drawAll();
+}
+function writeParams() { const o = {}; PARAMS.forEach(([k]) => o[k] = +(+P[k]).toFixed(3)); o.z_bot = +(+P.z_bot).toFixed(3); document.getElementById('pIO').value = JSON.stringify(o, null, 1); }
+function refineCamera() {                 // re-solve the render camera from rigid landmarks you've placed in the render
+  const pts = M.filter(m => RIGID.has(m.id) && m.touched && m.uv.gem && !m.obs.gem && m.model);
+  if (pts.length < 4) { $('camMsg').textContent = 'Need at least 4 cyan landmarks moved onto their true spots in the render (you have ' + pts.length + ').'; return; }
+  const c0 = CAMS.gem, err = c => { let s = 0; for (const m of pts) { const pr = project(c, m.model); s += pr ? (pr[0] - m.uv.gem[0]) ** 2 + (pr[1] - m.uv.gem[1]) ** 2 : 1e6; } return Math.sqrt(s / pts.length); };
+  const rot = (R, ax, a) => { const c = Math.cos(a), s = Math.sin(a), [x, y, z] = ax; const K = [[c + x * x * (1 - c), x * y * (1 - c) - z * s, x * z * (1 - c) + y * s], [y * x * (1 - c) + z * s, c + y * y * (1 - c), y * z * (1 - c) - x * s], [z * x * (1 - c) - y * s, z * y * (1 - c) + x * s, c + z * z * (1 - c)]];
+    return R.map(r => [0, 1, 2].map(j => r[0] * K[0][j] + r[1] * K[1][j] + r[2] * K[2][j])); };
+  let cur = JSON.parse(JSON.stringify(c0)), e0 = err(cur), best = e0;
+  const moves = [c => { c.pos[0] += 1; }, c => { c.pos[1] += 1; }, c => { c.pos[2] += 1; }, c => { c.R = rot(c.R, [1, 0, 0], 1); }, c => { c.R = rot(c.R, [0, 1, 0], 1); }, c => { c.R = rot(c.R, [0, 0, 1], 1); }, c => { c.f *= 1.01; }];
+  let st = [8, 8, 8, 0.01, 0.01, 0.01, 1];
+  for (let it = 0; it < 60; it++) { let imp = false;
+    for (let j = 0; j < 7; j++) for (const sgn of [1, -1]) { const c = JSON.parse(JSON.stringify(cur));
+      if (j < 3) c.pos[j] += sgn * st[j]; else if (j < 6) c.R = rot(c.R, [[1, 0, 0], [0, 1, 0], [0, 0, 1]][j - 3], sgn * st[j]); else c.f *= (1 + sgn * 0.02 * st[j]);
+      const e = err(c); if (e < best - 1e-4) { best = e; cur = c; imp = true; } }
+    if (!imp) st = st.map(v => v * 0.5); }
+  CAMS.gem = cur; $('camMsg').textContent = `Render camera re-solved from ${pts.length} landmarks: ${e0.toFixed(1)} → ${best.toFixed(1)} px average.`;
+  renderPanel(); drawAll();
+}
+const RIGID = new Set(['T', 'GL', 'GR', 'HL', 'HR', 'FL1', 'FL2', 'FR1', 'FR2']);   // PROJECT CONFIG
+const GUIDE = [   // PROJECT CONFIG
+  ['A', 'IE1', 'Inner silver edge where the upper band leaves the dip', 'band line, sideways position'],
+  ['A', 'IE2', 'Inner edge halfway up the upper band', 'band line, crest'],
+  ['A', 'IE3', 'Inner edge where it starts to arch over', 'top bend position and angle'],
+  ['A', 'OE1', 'Outer silver edge halfway up the upper band', 'width, flare'],
+  ['A', 'OE2', 'Outer edge at the top corner, where it turns in', 'flare, band end, top bend'],
+  ['A', 'CR', 'Highest point of the upper band (height from the render)', 'crest height and position'],
+  ['A', 'AT', 'Top of the arch rim', 'arch radius, rising leg'],
+  ['A', 'AI', 'Point of the arch nearest the blade', 'arch radius, lean'],
+  ['A', 'FE', 'Tip of the tucked free end', 'falling leg, arch turn'],
+  ['B', 'DE', 'Where the U band edge turns down beside the guard', 'dip position'],
+  ['B', 'DB', 'Lowest point of the dip (likely hidden in the photo)', 'dip depth'],
+  ['B', 'DX', 'Where the ribbon climbs out of the dip into the upper band', 'dip length and shape'],
+  ['B', 'UO', 'U band outer edge at the lower-left corner', 'U band width and height'],
+  ['B', 'UI', 'U band inner edge at the same spot', 'U band width, bank'],
+  ['B', 'UB', 'U band outer edge at the bottom centre', 'U band height']];
+// ---------- state ----------
+function fresh() { return INIT.map(m => ({ id: m.id, desc: m.desc, model: m.pos, uv: { gem: project(CAMS.gem, m.pos), photo: project(CAMS.photo, m.pos) }, obs: { gem: false, photo: false }, z: m.pos[2] })); }
+let M; try { M = JSON.parse(localStorage.getItem(KEY)) || fresh(); } catch (e) { M = fresh(); }
+let sel = null, addMode = false, showModel = true, userCount = M.filter(m => /^M\d+$/.test(m.id)).length;
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(M)); } catch (e) {} };
+function solve(m) {                       // 3D point + where to draw it in each view
+  const has = k => m.uv[k] && !m.obs[k];
+  let P = null, gap = null, how = '';
+  if (has('gem') && has('photo')) { const t = tri(ray(CAMS.gem, m.uv.gem), ray(CAMS.photo, m.uv.photo)); if (t) { P = t.P; gap = t.gap; how = 'seen in both'; } }
+  else if (has('gem') || has('photo')) { const k = has('gem') ? 'gem' : 'photo'; P = atZ(ray(CAMS[k], m.uv[k]), m.z); how = 'one view, height set'; }
+  const est = {}; for (const k of ['gem', 'photo']) est[k] = P && !has(k) ? project(CAMS[k], P) : null;
+  return { P, gap, how, est };
+}
+// ---------- panes ----------
+function Pane(key, cid) {
+  const cv = document.getElementById(cid), ctx = cv.getContext('2d'), img = new Image();
+  const V = { s: 1, ox: 0, oy: 0 }; let fitted = false;
+  img.onload = () => { fit(); drawAll(); }; img.src = IMG[key];
+  function fit() { const r = cv.getBoundingClientRect(); if (!img.width) return;
+    let box = key === 'photo' ? [60, 60, 820, 700] : [0, 0, img.width, img.height];
+    V.s = Math.min(r.width / (box[2] - box[0]), r.height / (box[3] - box[1])); V.ox = (r.width - (box[2] - box[0]) * V.s) / 2 - box[0] * V.s; V.oy = (r.height - (box[3] - box[1]) * V.s) / 2 - box[1] * V.s; fitted = true; }
+  const toS = ([u, v]) => [u * V.s + V.ox, v * V.s + V.oy], toI = (x, y) => [(x - V.ox) / V.s, (y - V.oy) / V.s];
+  function draw() {
+    const dpr = window.devicePixelRatio || 1, r = cv.getBoundingClientRect();
+    if (cv.width !== Math.round(r.width * dpr) || cv.height !== Math.round(r.height * dpr)) { cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr); if (!fitted) fit(); }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, r.width, r.height);
+    if (img.width) { ctx.imageSmoothingQuality = 'high'; ctx.drawImage(img, V.ox, V.oy, img.width * V.s, img.height * V.s); }
+    // guide line for the selected marker from the other view
+    const m = M.find(q => q.id === sel);
+    if (m && m.uv[OTHER[key]] && !m.obs[OTHER[key]]) {
+      const rr = ray(CAMS[OTHER[key]], m.uv[OTHER[key]]), pts = [];
+      for (let z = ZMIN; z <= ZMAX + 1e-6; z += 0.5) { const P = atZ(rr, z); const uv = P && project(CAMS[key], P); if (uv) pts.push([z, toS(uv)]); }
+      if (pts.length > 1) {
+        ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,90,100,0.95)'; ctx.setLineDash([7, 5]); ctx.beginPath(); pts.forEach(([, p], i) => i ? ctx.lineTo(...p) : ctx.moveTo(...p)); ctx.stroke(); ctx.setLineDash([]);
+        ctx.font = '600 12px "Barlow Semi Condensed", Arial'; ctx.fillStyle = '#fff';
+        for (const [z, p] of pts) if (Math.abs(((z - BASE) + 1e-6) % 5) < 1e-3) { ctx.beginPath(); ctx.arc(p[0], p[1], 3, 0, 7); ctx.fill(); ctx.strokeStyle = '#000'; ctx.lineWidth = 3; ctx.strokeText('z ' + (z - BASE).toFixed(0), p[0] + 6, p[1] - 4); ctx.fillText('z ' + (z - BASE).toFixed(0), p[0] + 6, p[1] - 4); }
+      }
+    }
+    if (showOutline) { ctx.lineWidth = 1.5;
+      for (const [type] of EDGE_TYPES) { ctx.strokeStyle = ECOL[type]; ctx.globalAlpha = 0.8;
+        for (const pl of projPolys(FEAT, type, key, 3)) { ctx.beginPath(); let started = false; for (const uv of pl) { if (!uv) { started = false; continue; } const [x, y] = toS(uv); if (started) ctx.lineTo(x, y); else { ctx.moveTo(x, y); started = true; } } ctx.stroke(); } }
+      ctx.globalAlpha = 1; }
+    for (const tr of (tracing && tracing.pts.length ? T.concat([tracing]) : T)) { if (tr.view !== key) continue; ctx.strokeStyle = ECOL[tr.type]; ctx.lineWidth = 3.5; ctx.setLineDash([]); ctx.beginPath();
+      tr.pts.forEach((q, i) => { const [x, y] = toS(q); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke();
+      ctx.fillStyle = '#fff'; for (const q of tr.pts) { const [x, y] = toS(q); ctx.beginPath(); ctx.arc(x, y, 2.5, 0, 7); ctx.fill(); } }
+    for (const q of M) {
+      const sol = solve(q), col = RIGID.has(q.id) ? '#4dd8ff' : q.model ? '#ffd34d' : '#ff6fd8', isSel = q.id === sel;
+      ctx.globalAlpha = (q.touched || RIGID.has(q.id) || isSel) ? 1 : 0.55;
+      const qm = modelPoint(FEAT, q.id) || q.model;
+      if (showModel && qm) { const mp = project(CAMS[key], qm); if (mp) { const [x, y] = toS(mp); ctx.strokeStyle = 'rgba(200,200,210,0.75)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(x - 4, y - 4); ctx.lineTo(x + 4, y + 4); ctx.moveTo(x + 4, y - 4); ctx.lineTo(x - 4, y + 4); ctx.stroke(); } }
+      let p = null, hollow = false;
+      if (q.uv[key] && !q.obs[key]) p = toS(q.uv[key]); else if (sol.est[key]) { p = toS(sol.est[key]); hollow = true; }
+      if (!p) continue;
+      ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p[0], p[1], isSel ? 8 : 6, 0, 7);
+      if (hollow) { ctx.setLineDash([3, 3]); ctx.strokeStyle = col; ctx.stroke(); ctx.setLineDash([]); } else { ctx.fillStyle = col; ctx.fill(); ctx.strokeStyle = '#111'; ctx.stroke(); }
+      if (isSel) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p[0], p[1], 12, 0, 7); ctx.stroke(); }
+      ctx.font = '600 13px "Barlow Semi Condensed", Arial'; ctx.lineWidth = 3; ctx.strokeStyle = '#000'; ctx.strokeText(q.id, p[0] + 9, p[1] - 8); ctx.fillStyle = '#fff'; ctx.fillText(q.id, p[0] + 9, p[1] - 8);
+      ctx.globalAlpha = 1;
+    }
+  }
+  function hit(x, y) { let best = null, bd = 14; for (const q of M) { const p = q.uv[key] && !q.obs[key] ? toS(q.uv[key]) : null; if (!p) continue; const d = Math.hypot(p[0] - x, p[1] - y); if (d < bd) { bd = d; best = q; } } return best; }
+  let drag = null;
+  cv.addEventListener('pointerdown', e => {
+    cv.setPointerCapture(e.pointerId); const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top, h = hit(x, y);
+    if (tracing) { const uv0 = toI(x, y); if (!tracing.view) tracing.view = key; if (tracing.view === key) { tracing.pts.push(uv0); drawAll(); } return; }
+    if (h && !addMode) { select(h.id); drag = { m: h }; return; }
+    const uv = toI(x, y);
+    if (addMode) { userCount++; let id = 'M' + userCount; while (M.some(q => q.id === id)) id = 'M' + (++userCount);
+      M.push({ id, desc: '', model: null, uv: { gem: null, photo: null, [key]: uv }, obs: { gem: false, photo: false }, z: 20, touched: true });
+      setAdd(false); select(id); changed(); return; }
+    const m = M.find(q => q.id === sel);
+    if (m && !m.uv[key] && !m.obs[key]) { m.uv[key] = uv; m.touched = true; $('sG').textContent = $('sP').textContent = (m.uv.gem && m.uv.photo) ? '' : 'Now place ' + m.id + ' on the red guide line in the other image (or tick Obscured)'; changed(); return; }
+    drag = { pan: true, x: e.clientX, y: e.clientY };
+  });
+  cv.addEventListener('pointermove', e => {
+    if (!drag) return; const r = cv.getBoundingClientRect();
+    if (drag.m) { drag.m.uv[key] = toI(e.clientX - r.left, e.clientY - r.top); changed(true); return; }
+    V.ox += e.clientX - drag.x; V.oy += e.clientY - drag.y; drag.x = e.clientX; drag.y = e.clientY; draw();
+  });
+  cv.addEventListener('pointerup', () => { if (drag && drag.m) { drag.m.touched = true; changed(); } drag = null; });
+  cv.addEventListener('wheel', e => { e.preventDefault(); const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top, k = Math.exp(-e.deltaY * 0.0015);
+    V.ox = x - (x - V.ox) * k; V.oy = y - (y - V.oy) * k; V.s *= k; draw(); }, { passive: false });
+  cv.addEventListener('dblclick', () => { if (tracing) { finishTrace(); return; } fit(); draw(); });
+  return { draw, fit, key };
+}
+const panes = [Pane('gem', 'cG'), Pane('photo', 'cP')];
+function drawAll() { panes.forEach(p => p.draw()); }
+// ---------- panel ----------
+const $ = id => document.getElementById(id);
+function setAdd(on) { addMode = on; $('bAdd').setAttribute('aria-pressed', on); $('sG').textContent = $('sP').textContent = on ? 'Click a feature in either image to place the new marker' : ''; }
+function select(id) { sel = id; renderPanel(); drawAll(); }
+function chip(m, k) { return m.obs[k] ? '<span class="chip hid" title="obscured">◌</span>' : m.uv[k] ? '<span class="chip ok" title="placed">●</span>' : '<span class="chip no" title="not placed">–</span>'; }
+function renderPanel() {
+  const m = M.find(q => q.id === sel); $('selBox').hidden = !m; $('bDel').disabled = !m;
+  if (m) {
+    const s = solve(m); $('selTitle').textContent = m.id + (m.desc ? ' — ' + m.desc : '');
+    if (document.activeElement !== $('fId')) $('fId').value = m.id; if (document.activeElement !== $('fDesc')) $('fDesc').value = m.desc;
+    $('fObsP').checked = m.obs.photo; $('fObsG').checked = m.obs.gem; $('fZ').value = (m.z - BASE).toFixed(1); $('oZ').textContent = (m.z - BASE).toFixed(1) + ' mm above plaque';
+    const mm = modelPoint(FEAT, m.id) || m.model, d = s.P && mm ? sub(s.P, mm) : null;
+    $('facts').innerHTML = s.P ? `3D: x ${s.P[0].toFixed(1)}, y ${s.P[1].toFixed(1)}, z ${(s.P[2] - BASE).toFixed(1)} above plaque (${s.how}${s.gap != null ? ', rays meet within ' + s.gap.toFixed(1) + ' mm' : ''})`
+      + (d ? `<br>Move from model: x ${d[0] >= 0 ? '+' : ''}${d[0].toFixed(1)}, y ${d[1] >= 0 ? '+' : ''}${d[1].toFixed(1)}, z ${d[2] >= 0 ? '+' : ''}${d[2].toFixed(1)} mm` : '')
+      : 'Place it in at least one image.';
+  }
+  $('list').innerHTML = M.map(q => { const s = solve(q), qm = modelPoint(FEAT, q.id) || q.model, d = s.P && qm ? norm(sub(s.P, qm)) : null;
+    return `<tr data-id="${q.id}" class="${q.id === sel ? 'on' : ''}"><td>${q.id}</td><td>${chip(q, 'photo')}</td><td>${chip(q, 'gem')}</td><td>${d == null ? '' : d.toFixed(1) + ' mm'}</td></tr>`; }).join('');
+  const out = M.map(q => { const s = solve(q); return { id: q.id, desc: q.desc, photo_px: q.uv.photo && !q.obs.photo ? TO_ORIG.photo(q.uv.photo).map(v => +v.toFixed(1)) : null, render_px: q.uv.gem && !q.obs.gem ? TO_ORIG.gem(q.uv.gem).map(v => +v.toFixed(1)) : null,
+    obscured: { photo: q.obs.photo, render: q.obs.gem }, xyz: s.P ? s.P.map(v => +v.toFixed(2)) : null, how: s.how, ray_gap: s.gap != null ? +s.gap.toFixed(2) : null, model_xyz: (modelPoint(FEAT, q.id) || q.model) ? (modelPoint(FEAT, q.id) || q.model).map(v => +v.toFixed(2)) : null, touched: !!q.touched }; });
+  $('out').value = JSON.stringify({ board: 'markers-v1', markers: out });
+}
+function changed(light) { if (!light) save(); renderPanel(); renderGuide(); drawAll(); }
+function renderGuide() {
+  $('guide').innerHTML = GUIDE.map(([pr, id, d, sets]) => { const m = M.find(q => q.id === id), placed = m && (m.uv.gem || m.uv.photo);
+    return `<div class="gi ${placed ? 'done' : ''}"><b>${id}</b><span>${d}</span><button type="button" data-g="${id}">${m ? 'Select' : 'Place'}</button><span class="pri">${pr === 'A' ? 'KEY' : ''}</span><small>sets: ${sets}</small></div>`; }).join('');
+}
+$('guide').addEventListener('click', e => { const b = e.target.closest('button[data-g]'); if (!b) return; const id = b.dataset.g, g = GUIDE.find(x => x[1] === id);
+  if (!M.some(q => q.id === id)) M.push({ id, desc: g[2], model: null, uv: { gem: null, photo: null }, obs: { gem: false, photo: false }, z: 20, touched: true });
+  setAdd(false); select(id); changed(); $('sG').textContent = $('sP').textContent = 'Click ' + id + ' in either image'; });
+$('bMine').addEventListener('click', () => { const n = M.filter(q => !q.model).length; if (!n) return; if (confirm('Remove the ' + n + ' marker' + (n === 1 ? '' : 's') + ' you added? The model markers stay.')) { M = M.filter(q => q.model); if (sel && !M.some(q => q.id === sel)) sel = null; changed(); } });
+$('bAll').addEventListener('click', () => { if (confirm('Remove every marker from the board? Reset to model brings the model markers back.')) { M = []; sel = null; changed(); } });
+$('list').addEventListener('click', e => { const tr = e.target.closest('tr'); if (tr) select(tr.dataset.id); });
+$('bAdd').addEventListener('click', () => setAdd(!addMode));
+$('bDel').addEventListener('click', () => { M = M.filter(q => q.id !== sel); sel = null; changed(); });
+$('bModel').addEventListener('click', e => { showModel = !showModel; e.target.setAttribute('aria-pressed', showModel); drawAll(); });
+$('bReset').addEventListener('click', () => { if (confirm('Discard your edits and put every marker back where the model has it?')) { M = fresh(); sel = null; changed(); } });
+$('fId').addEventListener('change', e => { const m = M.find(q => q.id === sel), v = e.target.value.trim(); if (m && v && !M.some(q => q.id === v)) { m.id = v; sel = v; changed(); } else e.target.value = m ? m.id : ''; });
+$('fDesc').addEventListener('input', e => { const m = M.find(q => q.id === sel); if (m) { m.desc = e.target.value; changed(); } });
+$('fObsP').addEventListener('change', e => { const m = M.find(q => q.id === sel); if (m) { m.obs.photo = e.target.checked; m.touched = true; changed(); } });
+$('fObsG').addEventListener('change', e => { const m = M.find(q => q.id === sel); if (m) { m.obs.gem = e.target.checked; m.touched = true; changed(); } });
+$('fZ').addEventListener('input', e => { const m = M.find(q => q.id === sel); if (m) { m.z = BASE + parseFloat(e.target.value); changed(); } });
+$('bClrP').addEventListener('click', () => { const m = M.find(q => q.id === sel); if (m) { m.uv.photo = null; changed(); } });
+$('bClrG').addEventListener('click', () => { const m = M.find(q => q.id === sel); if (m) { m.uv.gem = null; changed(); } });
+$('bCopy').addEventListener('click', async () => { const b = $('bCopy'); try { await navigator.clipboard.writeText($('out').value); b.textContent = 'Copied'; } catch (e) { $('out').focus(); $('out').select(); b.textContent = 'Selected — press Ctrl+C'; } setTimeout(() => b.textContent = 'Copy markers', 1800); });
+let showOutline = true, tracing = null;
+$('bOutline').addEventListener('click', e => { showOutline = !showOutline; e.target.setAttribute('aria-pressed', showOutline); drawAll(); });
+const syncW = () => { $('oR').textContent = (+$('wR').value).toFixed(2); $('oE').textContent = (+$('wE').value).toFixed(1); };
+$('wR').addEventListener('input', syncW); $('wE').addEventListener('input', syncW); syncW();
+$('grp').innerHTML = GROUPS.map(g => `<label><input type="checkbox" id="g_${g.replace(/\s/g, '')}" checked> ${g}</label>`).join('');
+$('bFit').addEventListener('click', runFit);
+$('bStop').addEventListener('click', () => { fitting = false; });
+$('bUndo').addEventListener('click', () => { if (prevP) { P = prevP; prevP = null; FEAT = SG.features(P); saveP(); writeParams(); $('fitMsg').textContent = 'Fit undone.'; $('bUndo').disabled = true; renderPanel(); drawAll(); } });
+$('bCam').addEventListener('click', refineCamera);
+$('bLoad').addEventListener('click', () => { try { const o = JSON.parse($('pIO').value); const q = Object.assign({}, P); let n = 0; for (const k in o) if (k in SG.DEFAULTS) { q[k] = +o[k]; n++; }
+    P = uMatch(Object.assign(q, FIT)); FEAT = SG.features(P); saveP(); writeParams(); $('fitMsg').textContent = 'Loaded ' + n + ' parameters.'; renderPanel(); drawAll(); }
+  catch (e) { $('fitMsg').textContent = 'Those parameters could not be read — paste the JSON from the shaper\u2019s Copy parameters.'; } });
+$('bCopyP').addEventListener('click', async () => { const b = $('bCopyP'); try { await navigator.clipboard.writeText($('pIO').value); b.textContent = 'Copied'; } catch (e) { $('pIO').focus(); $('pIO').select(); b.textContent = 'Selected — press Ctrl+C'; } setTimeout(() => b.textContent = 'Copy parameters', 1800); });
+$('tType').innerHTML = EDGE_TYPES.map(([k, l]) => `<option value="${k}">${l}</option>`).join('');
+function renderTraces() { $('tList').innerHTML = T.map((tr, i) => `<div class="tr"><span><i style="background:${ECOL[tr.type]}"></i>${(EDGE_TYPES.find(e => e[0] === tr.type) || [])[1]} · ${tr.view === 'photo' ? 'photo' : 'render'} · ${tr.pts.length} pts</span><button type="button" data-t="${i}">Delete</button></div>`).join('') || '<p class="gnote">No traces yet.</p>'; }
+function finishTrace() { if (tracing && tracing.pts.length >= 2) { T.push(tracing); saveT(); } tracing = null; $('bTrace').setAttribute('aria-pressed', false); $('bFin').disabled = true; $('sG').textContent = $('sP').textContent = ''; renderTraces(); drawAll(); }
+$('bTrace').addEventListener('click', () => { if (tracing) { finishTrace(); return; } setAdd(false); tracing = { type: $('tType').value, view: null, pts: [] }; $('bTrace').setAttribute('aria-pressed', true); $('bFin').disabled = false;
+  $('sG').textContent = $('sP').textContent = 'Click along the ' + $('tType').selectedOptions[0].textContent.toLowerCase() + ' in one image · double-click to finish'; });
+$('bFin').addEventListener('click', finishTrace);
+$('tList').addEventListener('click', e => { const b = e.target.closest('button[data-t]'); if (b) { T.splice(+b.dataset.t, 1); saveT(); renderTraces(); drawAll(); } });
+window.addEventListener('keydown', e => { if (!tracing) return; if (e.key === 'Enter') finishTrace(); if (e.key === 'Escape') { tracing = null; finishTrace(); } });
+writeParams(); renderTraces();
+window.addEventListener('resize', () => { panes.forEach(p => { p.fit(); }); drawAll(); });
+window.__board = { M: () => M, solve, project, CAMS, P: () => P, T: () => T, FEAT: () => FEAT, evaluate: () => evaluate(P, FEAT, true), runFit, setTraces: v => { T = v; saveT(); renderTraces(); drawAll(); } };
+renderPanel(); renderGuide(); drawAll();
+})();
+</script>
+</body>
+</html>

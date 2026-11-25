@@ -1,0 +1,513 @@
+{
+ "meta": {
+  "workload": "Contoso Policy Assistant",
+  "version": "0.1",
+  "status": "Draft",
+  "date": "2026-11-24",
+  "owner": "Solution architect (TBD)",
+  "reviewers": [
+   "Security reviewer",
+   "Network engineer"
+  ],
+  "environment": "Production",
+  "question": {
+   "audience": "security and engineering reviewers",
+   "system": "how employees, the assistant API, the model service and the policy document store interact",
+   "determine": "whether identity boundaries, private data access and auditability are acceptable",
+   "scope": "the production Azure subscription; HR systems and the Teams client are out of scope"
+  }
+ },
+ "inputs": {
+  "business_outcome": "Employees get cited answers from internal policy documents in under 5 seconds.",
+  "actors": [
+   "Employee",
+   "Content owner",
+   "Platform operator"
+  ],
+  "scope_in": [
+   "Web chat front end",
+   "Assistant API",
+   "Retrieval and model calls",
+   "Document ingestion"
+  ],
+  "scope_out": [
+   "HR system of record",
+   "Teams client"
+  ],
+  "constraints": [
+   "No public endpoints on data services",
+   "Data stays in East US 2"
+  ],
+  "quality_targets": [
+   "99.9% availability",
+   "RTO 4 h",
+   "RPO 1 h",
+   "P95 latency < 5 s"
+  ],
+  "decisions": [
+   "ADR-01 Compute model",
+   "ADR-02 Private endpoints"
+  ],
+  "unknowns": [
+   "Peak concurrent users",
+   "Retention period for chat logs"
+  ]
+ },
+ "views": [
+  {
+   "id": "context",
+   "type": "system_context",
+   "title": "System context",
+   "question": "What is the system, who uses it, and what does it connect to?",
+   "boundaries": [
+    {
+     "id": "org",
+     "label": "Contoso organization",
+     "kind": "trust"
+    },
+    {
+     "id": "sol",
+     "label": "Policy Assistant",
+     "kind": "application",
+     "parent": "org"
+    }
+   ],
+   "nodes": [
+    {
+     "id": "emp",
+     "label": "Employee",
+     "icon": "generic:user",
+     "kind": "actor",
+     "in": "org",
+     "col": 0,
+     "row": 0
+    },
+    {
+     "id": "owner",
+     "label": "Content owner",
+     "icon": "generic:user",
+     "kind": "actor",
+     "in": "org",
+     "col": 0,
+     "row": 1
+    },
+    {
+     "id": "app",
+     "label": "Policy Assistant",
+     "kind": "service",
+     "in": "sol",
+     "col": 2,
+     "row": 0,
+     "detail": "chat + API + retrieval"
+    },
+    {
+     "id": "idp",
+     "label": "Microsoft Entra ID",
+     "icon": "azure:entra-id",
+     "kind": "external",
+     "col": 4,
+     "row": 0
+    },
+    {
+     "id": "docs",
+     "label": "SharePoint policy library",
+     "icon": "generic:document",
+     "kind": "external",
+     "in": "org",
+     "col": 2,
+     "row": 1
+    }
+   ],
+   "edges": [
+    {
+     "from": "emp",
+     "to": "app",
+     "label": "Ask question",
+     "type": "request",
+     "protocol": "HTTPS"
+    },
+    {
+     "from": "app",
+     "to": "emp",
+     "label": "Cited answer",
+     "type": "response",
+     "protocol": "HTTPS"
+    },
+    {
+     "from": "app",
+     "to": "idp",
+     "label": "Validate token",
+     "type": "request",
+     "protocol": "OpenID Connect"
+    },
+    {
+     "from": "owner",
+     "to": "docs",
+     "label": "Publish policy",
+     "type": "command",
+     "protocol": "HTTPS"
+    },
+    {
+     "from": "docs",
+     "to": "app",
+     "label": "Policy documents",
+     "type": "data",
+     "protocol": "Microsoft Graph"
+    }
+   ]
+  },
+  {
+   "id": "network",
+   "type": "network_deployment",
+   "title": "Network and deployment",
+   "question": "Where does everything run, and what are the network and security boundaries?",
+   "boundaries": [
+    {
+     "id": "sub",
+     "label": "sub-policy-prod",
+     "kind": "subscription"
+    },
+    {
+     "id": "region",
+     "label": "East US 2",
+     "kind": "region",
+     "parent": "sub"
+    },
+    {
+     "id": "vnet",
+     "label": "vnet-policy-prod 10.20.0.0/16",
+     "kind": "vnet",
+     "parent": "region"
+    },
+    {
+     "id": "snapp",
+     "label": "snet-app",
+     "kind": "subnet",
+     "parent": "vnet"
+    },
+    {
+     "id": "snpe",
+     "label": "snet-private-endpoints",
+     "kind": "subnet",
+     "parent": "vnet"
+    }
+   ],
+   "nodes": [
+    {
+     "id": "emp",
+     "label": "Employee",
+     "icon": "generic:user",
+     "kind": "actor",
+     "col": 0,
+     "row": 1
+    },
+    {
+     "id": "afd",
+     "label": "Front Door + WAF",
+     "icon": "azure:front-door",
+     "kind": "network",
+     "in": "region",
+     "col": 1,
+     "row": 1
+    },
+    {
+     "id": "ca",
+     "label": "Container Apps env",
+     "icon": "azure:container-apps",
+     "kind": "compute",
+     "in": "snapp",
+     "col": 2,
+     "row": 1,
+     "vnet_injected": true
+    },
+    {
+     "id": "pe1",
+     "label": "PE: AI Search",
+     "icon": "azure:private-endpoint",
+     "kind": "endpoint",
+     "in": "snpe",
+     "col": 4,
+     "row": 0
+    },
+    {
+     "id": "pe2",
+     "label": "PE: OpenAI",
+     "icon": "azure:private-endpoint",
+     "kind": "endpoint",
+     "in": "snpe",
+     "col": 4,
+     "row": 1
+    },
+    {
+     "id": "srch",
+     "label": "Azure AI Search",
+     "icon": "azure:ai-search",
+     "kind": "paas",
+     "in": "region",
+     "col": 6,
+     "row": 0
+    },
+    {
+     "id": "aoai",
+     "label": "Azure OpenAI",
+     "icon": "azure:azure-openai",
+     "kind": "paas",
+     "in": "region",
+     "col": 6,
+     "row": 1
+    }
+   ],
+   "edges": [
+    {
+     "from": "emp",
+     "to": "afd",
+     "label": "Chat",
+     "type": "request",
+     "protocol": "HTTPS"
+    },
+    {
+     "from": "afd",
+     "to": "ca",
+     "label": "Forward",
+     "type": "request",
+     "protocol": "HTTPS/Private Link"
+    },
+    {
+     "from": "ca",
+     "to": "pe1",
+     "label": "Query",
+     "type": "request",
+     "protocol": "HTTPS"
+    },
+    {
+     "from": "ca",
+     "to": "pe2",
+     "label": "Completion",
+     "type": "request",
+     "protocol": "HTTPS"
+    },
+    {
+     "from": "pe1",
+     "to": "srch",
+     "label": "Private Link",
+     "type": "request",
+     "protocol": "Private Link"
+    },
+    {
+     "from": "pe2",
+     "to": "aoai",
+     "label": "Private Link",
+     "type": "request",
+     "protocol": "Private Link"
+    }
+   ],
+   "notes": [
+    "Private DNS zones linked to vnet-policy-prod",
+    "Public network access disabled on Search and OpenAI"
+   ]
+  },
+  {
+   "id": "seq-ask",
+   "type": "sequence",
+   "title": "Sequence: employee asks a question",
+   "question": "What happens end to end when an employee asks a question?",
+   "participants": [
+    {
+     "id": "emp",
+     "label": "Employee browser"
+    },
+    {
+     "id": "idp",
+     "label": "Entra ID"
+    },
+    {
+     "id": "api",
+     "label": "Assistant API"
+    },
+    {
+     "id": "srch",
+     "label": "AI Search"
+    },
+    {
+     "id": "aoai",
+     "label": "Azure OpenAI"
+    },
+    {
+     "id": "mon",
+     "label": "Azure Monitor"
+    }
+   ],
+   "steps": [
+    {
+     "from": "emp",
+     "to": "idp",
+     "label": "Sign in",
+     "protocol": "OpenID Connect"
+    },
+    {
+     "from": "idp",
+     "to": "emp",
+     "label": "ID + access token",
+     "protocol": "OAuth 2.0",
+     "type": "response"
+    },
+    {
+     "from": "emp",
+     "to": "api",
+     "label": "POST /ask + token",
+     "protocol": "HTTPS/REST"
+    },
+    {
+     "from": "api",
+     "to": "srch",
+     "label": "Security-trimmed query",
+     "protocol": "HTTPS, managed identity"
+    },
+    {
+     "from": "srch",
+     "to": "api",
+     "label": "Top-k passages",
+     "protocol": "HTTPS",
+     "type": "response"
+    },
+    {
+     "from": "api",
+     "to": "aoai",
+     "label": "Grounded prompt",
+     "protocol": "HTTPS, managed identity"
+    },
+    {
+     "from": "aoai",
+     "to": "api",
+     "label": "Answer + citations",
+     "protocol": "HTTPS",
+     "type": "response"
+    },
+    {
+     "from": "api",
+     "to": "emp",
+     "label": "Filtered answer",
+     "protocol": "HTTPS",
+     "type": "response"
+    },
+    {
+     "from": "api",
+     "to": "mon",
+     "label": "Trace + audit record",
+     "protocol": "OTLP",
+     "type": "telemetry"
+    }
+   ]
+  }
+ ],
+ "data_flows": [
+  {
+   "flow": "Policy ingestion",
+   "data_type": "Policy documents",
+   "from": "SharePoint",
+   "to": "AI Search index",
+   "protocol": "Microsoft Graph/HTTPS",
+   "classification": "Internal",
+   "owner": "Content owner",
+   "storage": "AI Search (East US 2)",
+   "retention": "Until source deleted",
+   "encryption": "TLS 1.2 in transit; platform keys at rest"
+  }
+ ],
+ "decisions": [
+  {
+   "id": "ADR-01",
+   "decision": "Compute model",
+   "requirement": "Variable demand, low ops overhead",
+   "options": [
+    "App Service",
+    "AKS",
+    "Container Apps"
+   ],
+   "selected": "Container Apps",
+   "reason": "Scale to zero, no cluster to run",
+   "tradeoffs": "Less infrastructure control",
+   "risks": "Cold start latency",
+   "assumptions": "Peak < 200 concurrent users",
+   "evidence": "Load test",
+   "owner": "Solution architect",
+   "date": "2026-11-24",
+   "review_date": "2027-02-24"
+  }
+ ],
+ "waf": {
+  "framework": "Azure Well-Architected Framework",
+  "reliability": [
+   {
+    "q": "Is the workload deployed across availability zones?",
+    "a": "Not yet decided",
+    "status": "unknown"
+   }
+  ],
+  "security": [
+   {
+    "q": "Can managed identities replace stored credentials?",
+    "a": "Yes: API to Search and OpenAI",
+    "status": "met"
+   }
+  ],
+  "cost_optimization": [
+   {
+    "q": "Can resources scale to zero?",
+    "a": "Container Apps yes; Search no",
+    "status": "met"
+   }
+  ],
+  "operational_excellence": [
+   {
+    "q": "What is the rollback process?",
+    "a": "Not documented",
+    "status": "gap"
+   }
+  ],
+  "performance_efficiency": [
+   {
+    "q": "What are the tested limits?",
+    "a": "No load test yet",
+    "status": "gap"
+   }
+  ]
+ },
+ "register": [
+  {
+   "id": "R-01",
+   "type": "Open question",
+   "description": "Peak concurrent users unknown",
+   "impact": "Sizing of Search replicas and ADR-01",
+   "owner": "Product owner",
+   "target_date": "2026-12-15",
+   "validation": "Usage survey",
+   "status": "Open"
+  },
+  {
+   "id": "R-02",
+   "type": "Open question",
+   "description": "Chat log retention period",
+   "impact": "Storage cost and compliance",
+   "owner": "Compliance",
+   "target_date": "2026-12-15",
+   "validation": "Policy decision",
+   "status": "Open"
+  }
+ ],
+ "validation": [
+  {
+   "n": 5,
+   "question": "Are trust boundaries visible?",
+   "result": "partial",
+   "evidence": "Context shows org boundary; no identity view yet"
+  }
+ ],
+ "changelog": [
+  {
+   "version": "0.1",
+   "date": "2026-11-24",
+   "change": "First draft"
+  }
+ ]
+}
